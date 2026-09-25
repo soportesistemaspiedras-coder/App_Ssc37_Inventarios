@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sistema de Inventarios - Alcaldía de Piedras Tolima</title>
+    <!-- Favicon / Ícono oficial de la Alcaldía de Piedras -->
+    <link rel="icon" type="image/png" href="https://www.piedras-tolima.gov.co/sites/piedrastolima/content/files/000537/26825_escudo-piedras-pagina-web01_200x200.png">
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            background-color: #f1f5f9;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: #0f172a;
+        }
+
+        iframe {
+            border: none;
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        /* Pantalla inicial contenedora */
+        #fullscreen-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(241, 245, 249, 0.98);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            z-index: 9999;
+            overflow-y: auto;
+            padding: 24px 16px;
+        }
+
+        .guide-card {
+            background: #ffffff;
+            width: 100%;
+            max-width: 620px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+            border: 1px solid #cbd5e1;
+            padding: 28px 24px;
+            margin: auto 0;
+            text-align: left;
+        }
+
+        .header-section {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .header-section img {
+            width: 85px;
+            height: auto;
+            max-height: 90px;
+            object-fit: contain;
+            margin-bottom: 12px;
+        }
+
+        .header-section h1 {
+            color: #15803d; /* Verde institucional */
+            font-size: 22px;
+            font-weight: 800;
+            margin: 0 0 4px 0;
+        }
+
+        .header-section .entity-name {
+            font-size: 13px;
+            font-weight: 700;
+            color: #0369a1; /* Azul institucional */
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+        }
+
+        /* Botón de ingreso ubicado debajo del título principal */
+        .btn-container {
+            text-align: center;
+            margin: 18px 0 20px 0;
+        }
+
+        .btn-ingresar {
+            padding: 14px 28px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #ffffff;
+            background-color: #15803d;
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(21, 128, 61, 0.3);
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+        }
+
+        .btn-ingresar:hover {
+            background-color: #166534;
+        }
+
+        .btn-ingresar:active {
+            transform: scale(0.98);
+        }
+
+        .device-info {
+            margin-top: 8px;
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        .header-section .subtitle {
+            font-size: 14px;
+            color: #334155;
+            font-weight: 700;
+            margin: 0 0 8px 0;
+        }
+
+        .header-section .lead {
+            font-size: 13.5px;
+            color: #475569;
+            line-height: 1.5;
+            margin: 0;
+        }
+
+        /* Pasos del instructivo */
+        .steps-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .step-row {
+            display: flex;
+            align-items: flex-start;
+            background-color: #f8fafc;
+            border-radius: 8px;
+            padding: 12px 14px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .step-number {
+            font-size: 20px;
+            font-weight: 800;
+            color: #15803d;
+            min-width: 32px;
+            line-height: 1.2;
+        }
+
+        .step-content strong {
+            display: block;
+            font-size: 14px;
+            color: #0f172a;
+            margin-bottom: 2px;
+        }
+
+        .step-content p {
+            margin: 0;
+            font-size: 13px;
+            color: #475569;
+            line-height: 1.4;
+            word-break: break-all;
+        }
+
+        .step-content a {
+            color: #0369a1;
+            text-decoration: underline;
+        }
+
+        /* Caja de QR dinámico */
+        .qr-section {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            border: 1px solid #cbd5e1;
+            border-radius: 12px;
+            padding: 14px;
+            background-color: #ffffff;
+        }
+
+        .qr-section img {
+            width: 88px;
+            height: 88px;
+            border-radius: 6px;
+            flex-shrink: 0;
+        }
+
+        .qr-text strong {
+            display: block;
+            font-size: 14px;
+            color: #15803d;
+            margin-bottom: 4px;
+        }
+
+        .qr-text p {
+            margin: 0;
+            font-size: 12.5px;
+            color: #64748b;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Capa de Inicio con Instructivo Integrado -->
+    <div id="fullscreen-overlay">
+        <div class="guide-card">
+            
+            <div class="header-section">
+                <!-- Escudo Oficial de Piedras Tolima -->
+                <img src="https://www.piedras-tolima.gov.co/sites/piedrastolima/content/files/000537/26825_escudo-piedras-pagina-web01_200x200.png" alt="Escudo Alcaldía Municipal de Piedras Tolima">
+                <h1>App de Inventarios Comunitarios</h1>
+                <div class="entity-name">Alcaldía Municipal de Piedras - Tolima</div>
+
+                <!-- Botón de acceso directo -->
+                <div class="btn-container">
+                    <button class="btn-ingresar" onclick="activarPantallaCompleta()">Ingresar a la Aplicación</button>
+                    <div id="pantalla-info" class="device-info"></div>
+                </div>
+
+                <div class="subtitle">Guía de acceso para la comunidad · 4 pasos</div>
+                <p class="lead">Bienvenido al sistema en línea dispuesto por la Alcaldía Municipal para el control, registro y consulta del inventario comunitario. Sigue estas instrucciones:</p>
+            </div>
+
+            <div class="steps-container">
+                <div class="step-row">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <strong>Accede a la plataforma</strong>
+                        <p>Puedes ingresar directamente desde tu celular o computador, o escaneando el código QR: <br>
+                           <a id="current-url-link" href="#" target="_blank"></a>
+                        </p>
+                    </div>
+                </div>
+
+                <div class="step-row">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <strong>Identifícate en el sistema</strong>
+                        <p>Ingresa tu número de documento o código asignado para validar tus permisos de acceso.</p>
+                    </div>
+                </div>
+
+                <div class="step-row">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <strong>Selecciona el módulo o sector</strong>
+                        <p>Elige el tipo de elemento, bien comunitario o inventario que deseas registrar o consultar.</p>
+                    </div>
+                </div>
+
+                <div class="step-row">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <strong>Gestiona e ingresa datos</strong>
+                        <p>Realiza los cambios, guardados o consultas de manera fácil e intuitiva.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contenedor QR dinámico según la URL actual -->
+            <div class="qr-section">
+                <img id="qr-code-img" src="" alt="Código QR de acceso a la App">
+                <div class="qr-text">
+                    <strong>Accede rápido desde tu celular</strong>
+                    <p>Apunta la cámara de tu teléfono al código QR para ingresar a la App de Inventarios sin necesidad de escribir la web.</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Iframe con el WebApp (Google Apps Script u otro servicio) -->
+    <iframe 
+        id="app-frame"
+        src="https://script.google.com/macros/s/AKfycbwsXlbhKas7UbU3HkfPWjordrRWOUJtbE5HSM7_WNPit3oAWsgk8B7y90MX0a5gT-lz/exec"
+        allowfullscreen>
+    </iframe>
+
+    <script>
+        const currentUrl = window.location.href;
+        
+        // Asignar link dinámico
+        const urlLink = document.getElementById('current-url-link');
+        urlLink.href = currentUrl;
+        urlLink.textContent = currentUrl;
+
+        // Generar QR dinámico
+        const qrImage = document.getElementById('qr-code-img');
+        qrImage.src = 'https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=' + encodeURIComponent(currentUrl);
+
+        function esDispositivoMovil() {
+            const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+            const esTouchOUserAgent = /android|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent);
+            const esPantallaPequena = window.matchMedia("(max-width: 768px)").matches;
+            return esTouchOUserAgent || esPantallaPequena;
+        }
+
+        const info = document.getElementById('pantalla-info');
+        if (esDispositivoMovil()) {
+            info.textContent = "La aplicación se optimizará en modo pantalla completa.";
+        }
+
+        function activarPantallaCompleta() {
+            if (esDispositivoMovil()) {
+                const elem = document.documentElement;
+                if (elem.requestFullscreen) {
+                    elem.requestFullscreen();
+                } else if (elem.webkitRequestFullscreen) {
+                    elem.webkitRequestFullscreen();
+                } else if (elem.msRequestFullscreen) {
+                    elem.msRequestFullscreen();
+                }
+            }
+
+            // Ocultar capa de inicio para revelar el iframe de la App
+            document.getElementById('fullscreen-overlay').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
